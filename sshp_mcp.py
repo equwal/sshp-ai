@@ -122,7 +122,8 @@ def sshp_run(args, cfg):
     for opt in cfg["ssh_options"]:
         argv += ["-o", opt]
 
-    with tempfile.NamedTemporaryFile("w", suffix=".hosts", delete=False) as f:
+    # newline="\n": sshp keeps a CR from a Windows CRLF line as part of the host name.
+    with tempfile.NamedTemporaryFile("w", suffix=".hosts", delete=False, newline="\n") as f:
         f.write("\n".join(hosts) + "\n")
         hosts_path = f.name
     try:

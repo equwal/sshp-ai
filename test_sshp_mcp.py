@@ -66,6 +66,27 @@ class PolicyTest(unittest.TestCase):
         finally:
             os.unlink(f.name)
 
+    def test_hosts_file_has_no_cr(self):
+        # Regression: on Windows a CRLF temp file made sshp reject "host\r".
+        seen = {}
+
+        def fake_run(argv, **kw):
+            with open(argv[argv.index("-f") + 1], "rb") as f:
+                seen["data"] = f.read()
+            return subprocess.CompletedProcess(argv, 0, "[a.example.com] exited: 0 (1 ms)\n", "")
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as f:
+            f.write("a.example.com\n")
+        old = sshp_mcp.subprocess.run
+        sshp_mcp.subprocess.run = fake_run
+        try:
+            out = sshp_mcp.sshp_run({"command": "uptime"}, cfg(f.name))
+        finally:
+            sshp_mcp.subprocess.run = old
+            os.unlink(f.name)
+        self.assertEqual(seen["data"], b"a.example.com\n")
+        self.assertEqual(out["hosts"]["a.example.com"]["exit_code"], 0)
+
     def test_bad_user(self):
         with tempfile.NamedTemporaryFile("w", delete=False) as f:
             f.write("a.example.com\n")
