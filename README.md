@@ -1,10 +1,10 @@
 # sshp-ai
 
-Let AI coding agents check a whole fleet of servers in one call, safely.
+A parallel SSH runner for AI coding agents: run one command on many hosts at once and get per-host output and exit codes.
 
 sshp-ai wraps [sshp](https://github.com/bahamas10/sshp) by Dave Eddy (bahamas10), a fast parallel SSH executor written in C. It adds two things:
 
-- **`skills/sshp/SKILL.md`**: an agent skill that teaches when and how to use sshp: read-only checks first, `-n` dry runs before writes, `BatchMode` and timeouts so nothing hangs, output grouping, and per-host exit codes. It works in the skills folders of Claude Code, Codex, Copilot CLI and Antigravity.
+- **`skills/sshp/SKILL.md`**: an agent skill that teaches when and how to use sshp: `-n` dry runs before risky commands, `BatchMode` and timeouts so nothing hangs, output grouping, and per-host exit codes. It works in the skills folders of Claude Code, Codex, Copilot CLI and Antigravity.
 - **`sshp_mcp.py`**: a stdio MCP server (Python 3 stdlib only) with two tools:
   - `sshp_run(command, hosts?, max_jobs?, timeout?, user?, dry_run?)` returns JSON with each host's output and exit code.
   - `sshp_hosts()` lists the allowlisted hosts and whether writes are enabled.
@@ -16,8 +16,8 @@ sshp-ai does not include sshp's code. Install sshp yourself.
 The operator sets the limits in a config file. The model cannot change them.
 
 - **Host allowlist.** Only hosts in the hosts file can be targeted.
-- **Read-only by default.** A command must start with an allowed verb (`uptime`, `df`, `systemctl status`, `journalctl`, `docker ps`, ...) and must not contain shell metacharacters (`; | & > < $ \` ( )`). Write-like forms such as `find -delete`, `systemctl restart` or `date -s` are refused.
-- **Writes need `"allow_write": true`** in the config. Only the operator can set it.
+- **Conservative default.** Out of the box, a command must start with an allowed verb (`uptime`, `df`, `systemctl status`, `journalctl`, `docker ps`, ...) and must not contain shell metacharacters (`; | & > < $ \` ( )`). Write-like forms such as `find -delete`, `systemctl restart` or `date -s` are refused.
+- **`"allow_write": true` makes it a general-purpose runner.** Set it in the config to run any command (restarts, installs, edits). Only the operator can set it. The host allowlist still applies.
 - ssh runs with `BatchMode=yes` and `ConnectTimeout=10`, so a prompt fails fast. The whole run has a timeout (default 60 s, max 600 s).
 
 ## Install

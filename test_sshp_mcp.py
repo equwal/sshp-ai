@@ -56,6 +56,11 @@ class PolicyTest(unittest.TestCase):
     def test_allow_write_comes_from_config(self):
         self.assertIsNone(sshp_mcp.check_command("systemctl restart nginx", cfg("x", allow_write=True)))
 
+    def test_write_command_refused_then_runs(self):
+        cmd = "touch /tmp/x && rm /tmp/x"
+        self.assertIsNotNone(sshp_mcp.check_command(cmd, cfg("x")))
+        self.assertIsNone(sshp_mcp.check_command(cmd, cfg("x", allow_write=True)))
+
     def test_host_allowlist(self):
         with tempfile.NamedTemporaryFile("w", delete=False) as f:
             f.write("# comment\na.example.com\n\nb.example.com\n")

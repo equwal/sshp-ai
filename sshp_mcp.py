@@ -3,7 +3,8 @@
 
 Safety comes from the server config, never from the model:
 - Only hosts listed in the hosts file can be targeted.
-- Read-only mode is the default. A command must start with an allowed verb
+- Out of the box only read-only commands run; set "allow_write": true for a
+  general-purpose runner. A command must start with an allowed verb
   and must not contain shell metacharacters, unless the config sets
   "allow_write": true.
 
@@ -160,8 +161,8 @@ TOOLS = [
         "name": "sshp_run",
         "description": "Run one command on many SSH hosts in parallel with sshp. "
                        "Returns per-host output (stdout+stderr merged) and exit code. "
-                       "Hosts must be in the server allowlist. Read-only commands only "
-                       "unless the operator enabled writes in the server config.",
+                       "Hosts must be in the server allowlist. Without allow_write in the "
+                       "server config, only read-only commands are accepted.",
         "inputSchema": {
             "type": "object",
             "properties": {
